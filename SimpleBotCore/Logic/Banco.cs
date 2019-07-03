@@ -7,6 +7,7 @@ namespace SimpleBotCore.Logic
     public class Banco
     {
         private readonly MongoClient _mongoClient = null;
+        private const string Database = "ChatBot";
 
         private Banco()
         {
@@ -30,7 +31,7 @@ namespace SimpleBotCore.Logic
 
         public void SalvarMensagem(SimpleMessage conversa)
         {
-            var database = _mongoClient.GetDatabase("ChatBot");
+            var database = _mongoClient.GetDatabase(Database);
             var collection = database.GetCollection<BsonDocument>("Conversas");
             collection.InsertOne(new BsonDocument
             {
@@ -40,12 +41,12 @@ namespace SimpleBotCore.Logic
             });
         }
 
-        public int ContadorMsgs(string id)
+        public int ContadorMensagem(string id)
         {
-            var database = _mongoClient.GetDatabase("ChatBot");
-            var collection = database.GetCollection<BsonDocument>("ContadorMsgs");
+            var database = _mongoClient.GetDatabase(Database);
+            var collection = database.GetCollection<BsonDocument>("Mensagens");
 
-            var filter = new BsonDocument { { "ID", id } };
+            var filter = new BsonDocument { { "Id", id } };
 
             var ret = collection.Find(filter).ToList();
 
@@ -58,7 +59,7 @@ namespace SimpleBotCore.Logic
 
             collection.ReplaceOne(filter, new BsonDocument
             {
-                { "ID", id },
+                { "Id", id },
                 { "Contador", ++cotador }
             },
             new UpdateOptions { IsUpsert = true });
