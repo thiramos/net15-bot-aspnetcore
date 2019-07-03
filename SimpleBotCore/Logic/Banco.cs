@@ -1,20 +1,16 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SimpleBotCore.Logic
 {
     public class Banco
     {
-        MongoClient _mc = null;
-
+        private readonly MongoClient _mongoClient = null;
 
         private Banco()
         {
-            _mc = new MongoClient();
+            _mongoClient = new MongoClient();
         }
 
         private static Banco _instance;
@@ -34,9 +30,9 @@ namespace SimpleBotCore.Logic
 
         public void SalvarMensagem(SimpleMessage conversa)
         {
-            var db = _mc.GetDatabase("ChatBot");
-            var col = db.GetCollection<BsonDocument>("Conversas");
-            col.InsertOne(new BsonDocument
+            var database = _mongoClient.GetDatabase("ChatBot");
+            var collection = database.GetCollection<BsonDocument>("Conversas");
+            collection.InsertOne(new BsonDocument
             {
                 { "Id", conversa.Id },
                 { "Text", conversa.Text },
@@ -46,12 +42,12 @@ namespace SimpleBotCore.Logic
 
         public int ContadorMsgs(string id)
         {
-            var db = _mc.GetDatabase("ChatBot");
-            var col = db.GetCollection<BsonDocument>("ContadorMsgs");
+            var database = _mongoClient.GetDatabase("ChatBot");
+            var collection = database.GetCollection<BsonDocument>("ContadorMsgs");
 
             var filter = new BsonDocument { { "ID", id } };
 
-            var ret = col.Find(filter).ToList();
+            var ret = collection.Find(filter).ToList();
 
             var cotador = 0;
 
@@ -60,13 +56,12 @@ namespace SimpleBotCore.Logic
                 cotador = ret.FirstOrDefault()["Contador"].AsInt32;
             }
 
-            col.ReplaceOne(filter,
-                new BsonDocument
-                {
-                        { "ID", id },
-                        { "Contador", ++cotador }
-                },
-                new UpdateOptions { IsUpsert = true });
+            collection.ReplaceOne(filter, new BsonDocument
+            {
+                { "ID", id },
+                { "Contador", ++cotador }
+            },
+            new UpdateOptions { IsUpsert = true });
 
             return cotador;
         }
